@@ -156,6 +156,8 @@
     <ClInclude Include="VertexBufferObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\light.fs" />
+    <None Include="Shaders\light.vs" />
     <None Include="Shaders\quad.fs" />
     <None Include="Shaders\quad.vs" />
     <None Include="Shaders\shadow_mapping_base.fs" />

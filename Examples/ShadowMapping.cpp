@@ -66,13 +66,13 @@ float vertices[] = {
 
 float planeVertices[] = {
 	// positions            // normals         // texcoords
-	 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+	 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f,
 	-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-	-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+	-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
 
-	 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-	-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-	 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+	 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f,
+	-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+	 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f
 };
 
 float quadVertices[] = {
@@ -163,7 +163,7 @@ int main(void)
 
 	// 多采样必须在creatwindow前
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	window = glfwCreateWindow(800, 600, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(1024, 1024, "Hello World", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
@@ -185,7 +185,9 @@ int main(void)
 		return -1;
 	}
 
+	glEnable(GL_FRAMEBUFFER_SRGB);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_MULTISAMPLE);
 
 	VertexBufferObject plane_vbo{ planeVertices, sizeof(planeVertices) };
 	plane_vbo.Bind();
@@ -213,10 +215,13 @@ int main(void)
 	// shader
 	Shader floor_shader{ "./Shaders/quad.vs", "./Shaders/quad.fs" };
 	Shader simple_depth_shader{ "./Shaders/shadow_mapping_depth.vs", "./Shaders/shadow_mapping_depth.fs" };
-	Shader shader{ "./Shaders/shadow_mapping_depth.vs", "./Shaders/shadow_mapping_depth.fs" };
-
+	Shader shader{ "./Shaders/shadow_mapping_base.vs", "./Shaders/shadow_mapping_base.fs" };
+	Shader light_shader{ "./Shaders/light.vs", "./Shaders/light.fs" };
 	// texture
-	Texture wood_texture{ "./Textures/wood.png", false };
+	Texture wood_texture{ "./Textures/wood.png", true };
+
+	// model
+	Model light{ "./Models/Planet/planet.obj" };
 
 	// framebuffer
 	unsigned int fbo;
@@ -225,11 +230,11 @@ int main(void)
 	unsigned int depth_map_texture;
 	glGenTextures(1, &depth_map_texture);
 	glBindTexture(GL_TEXTURE_2D, depth_map_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 800, 600, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_map_texture, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
@@ -244,7 +249,7 @@ int main(void)
 
 		glm::mat4 light_projection, light_view;
 		glm::mat4 light_matrix;
-		glm::vec3 light_pos = glm::vec3(-2.0f, 4.0f, -1.0f);
+		glm::vec3 light_pos = glm::vec3(-2.0f, 5.0f, -1.0f);
 		light_view = glm::lookAt(light_pos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
 		light_matrix = light_projection * light_view;
@@ -253,10 +258,11 @@ int main(void)
 		simple_depth_shader.Bind();
 		simple_depth_shader.SetUniformMat4("LightSpaceMatrix", light_matrix);
 
-		glViewport(0, 0, 800, 600);
+		glViewport(0, 0, 1024, 1024);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
+#pragma region Draw
 		glm::mat4 floor_model = glm::mat4(1.0f);
 		plane_vbo.Bind();
 		plane_vao.Bind();
@@ -289,18 +295,82 @@ int main(void)
 		cube_vao.Bind();
 		simple_depth_shader.SetUniformMat4("model", cube_model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+#pragma endregion Draw
 
-		//	render scene as normal using the generated depth / shadow map
+		//  render scene as normal using the generated depth/shadow map
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, 800, 600);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1024.0f / 1024.0f, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+
+#pragma region 灯
+		light_shader.Bind();
+		light_shader.SetUniformMat4("view", view);
+		light_shader.SetUniformMat4("projection", projection);
+
+		glm::mat4 light_model = glm::mat4(1.0f);
+		light_model = glm::translate(light_model, light_pos);
+		light_model = glm::scale(light_model, glm::vec3(0.05f));
+		light_shader.SetUniformMat4("model", light_model);
+		light.Draw(light_shader);
+#pragma endregion 灯
+
+		shader.Bind();
+		shader.SetUniformMat4("view", view);
+		shader.SetUniformMat4("projection", projection);
+		shader.SetUniformMat4("lightSpaceMatrix", light_matrix);
+		shader.SetUniform3f("CameraPos", { camera.position.x, camera.position.y, camera.position.z });
+		shader.SetUniform3f("LightPos", { light_pos.x, light_pos.y, light_pos.z });
+		wood_texture.Usetexture(0);
+		wood_texture.Bind();
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, depth_map_texture);
+		shader.SetUniform1i("diffuse_texture", 0);
+		shader.SetUniform1i("DepthMap", 1);
+
+#pragma region Draw
+		floor_model = glm::mat4(1.0f);
+		plane_vbo.Bind();
+		plane_vao.Bind();
+		shader.SetUniformMat4("model", floor_model);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		cube_model = glm::mat4(1.0f);
+		cube_model = glm::translate(cube_model, glm::vec3(0.0f, 1.5f, 0.0));
+		cube_model = glm::scale(cube_model, glm::vec3(0.5f));
+		cube_vbo.Bind();
+		cube_vao.Bind();
+		shader.SetUniformMat4("model", cube_model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		cube_model = glm::mat4(1.0f);
+		cube_model = glm::translate(cube_model, glm::vec3(2.0f, 0.0f, 1.0));
+		cube_model = glm::scale(cube_model, glm::vec3(0.5f));
+		cube_vbo.Bind();
+		cube_vao.Bind();
+		shader.SetUniformMat4("model", cube_model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		cube_model = glm::mat4(1.0f);
+		cube_model = glm::translate(cube_model, glm::vec3(-1.0f, 0.0f, 2.0));
+		cube_model = glm::rotate(cube_model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+		cube_model = glm::scale(cube_model, glm::vec3(0.25));
+		cube_vbo.Bind();
+		cube_vao.Bind();
+		shader.SetUniformMat4("model", cube_model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+#pragma endregion Draw
+
+#pragma region 绘制阴影贴图
+		//	render Depth map to quad for visual debugging
 		quad_vbo.Bind();
 		quad_vao.Bind();
 		floor_shader.Bind();
 		glActiveTexture(0);
 		glBindTexture(GL_TEXTURE_2D, depth_map_texture);
 		floor_shader.SetUniform1i("DepthMap", 0);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+#pragma endregion 绘制阴影贴图
 
 		camera.UpdateCameraPosition();
 		/* Swap front and back buffers */

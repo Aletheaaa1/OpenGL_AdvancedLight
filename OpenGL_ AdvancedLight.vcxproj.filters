@@ -117,5 +117,7 @@
     </None>
     <None Include="Shaders\shadow_mapping_base.vs" />
     <None Include="Shaders\shadow_mapping_base.fs" />
+    <None Include="Shaders\light.vs" />
+    <None Include="Shaders\light.fs" />
   </ItemGroup>
 </Project>
