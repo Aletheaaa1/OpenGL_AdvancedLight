@@ -15,15 +15,31 @@ uniform vec3 CameraPos;
 
 out vec4 FragColor;
 
-float ShadowCal(vec4 FragPosLightSpace)
+float ShadowCal(vec4 FragPosLightSpace, vec3 LightDir, vec3 Normal)
 {
 	vec3 ProjCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
 	ProjCoords = ProjCoords * 0.5 + 0.5;
 
-	float ClosestDepth = texture(DepthMap, ProjCoords.xy).r;
 	float CurrentDepth = ProjCoords.z;
+	float bias = max(0.05 * dot(Normal, LightDir), 0.005);
 
-	float shadow = CurrentDepth - 0.005 > ClosestDepth ? 1.0 : 0.0;
+	float shadow = 0.0;
+	vec2 TextureSize = 1.0 / textureSize(DepthMap, 0);
+	for(int x = -1; x <= 1; x++)
+	{
+		for(int y = -1; y <= 1; y++)
+		{
+			float PCFDepth = texture(DepthMap, ProjCoords.xy + vec2(x, y) * TextureSize).x;
+			shadow += CurrentDepth - bias > PCFDepth ? 1.0 : 0.0;
+		}
+	}
+	
+	shadow /= 9.0;
+	
+	if(ProjCoords.z > 1.0)
+	{
+		shadow = 0;
+	}
 
 	return shadow;
 }
@@ -46,7 +62,7 @@ void main()
 	vec3 Specular = spec * LightColor;
 
 	// º∆À„“ı”∞
-	float shadow = ShadowCal(vs_out.FragPosLightSpace);
+	float shadow = ShadowCal(vs_out.FragPosLightSpace, LightDir, Normal);
 	vec3 Lighting = (Ambient + (1.0 - shadow) * (Diffuse + Specular)) * LightColor * Texture;
 
 	FragColor = vec4(Lighting, 1.0);
