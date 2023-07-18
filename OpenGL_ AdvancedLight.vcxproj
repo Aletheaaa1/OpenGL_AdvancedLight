@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,7 +129,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Examples\ShadowMapping.cpp" />
+    <ClCompile Include="Examples\PointShadow.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Examples\ShadowMapping.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="LightDirectional.cpp" />
     <ClCompile Include="LightPoint.cpp" />
     <ClCompile Include="LightSpot.cpp" />
@@ -158,6 +164,11 @@
   <ItemGroup>
     <None Include="Shaders\light.fs" />
     <None Include="Shaders\light.vs" />
+    <None Include="Shaders\point_shaders.fs" />
+    <None Include="Shaders\point_shaders.vs" />
+    <None Include="Shaders\point_shaders_depth.fs" />
+    <None Include="Shaders\point_shaders_depth.gs" />
+    <None Include="Shaders\point_shaders_depth.vs" />
     <None Include="Shaders\quad.fs" />
     <None Include="Shaders\quad.vs" />
     <None Include="Shaders\shadow_mapping_base.fs" />

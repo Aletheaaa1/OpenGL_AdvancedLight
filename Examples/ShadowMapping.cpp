@@ -234,6 +234,12 @@ int main(void)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	/*
+		当一个片段完全位于Shadowmap之外(也就是位于光源椎体外)，它对应的Shadowmap纹理坐标就可能小于0或大于1，这就可能出现问题。使用GL_CLAMP_TO_BORDER后，
+		超过0到1范围的纹理坐标，就会返回一个边界值。默认的边界值是(0, 0, 0, 0)。纹理如果包含了深度成分，那么它的第一个分量表示深度值。默认的边界值0在这里
+		就会出问题，因为深度值0对应近平面，这就造成所有位于光椎体外的点都被认为在阴影中！所以，这里我们使用glTexParameterfv函数设置边界颜色为(1, 0, 0, 0)，
+		从而使它们对应最大深度值，使渲染结果正确。
+	*/
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	float border[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -253,11 +259,12 @@ int main(void)
 		glm::mat4 light_projection, light_view;
 		glm::mat4 light_matrix;
 		glm::vec3 light_pos = glm::vec3(-2.0f, 4.0f, -1.0f);
-		//light_pos.x += sin(glfwGetTime()) * 5;
+		light_pos.x += sin(glfwGetTime()) * 5;
 		//light_pos.y += sin(glfwGetTime());
-		//light_pos.z += cos(glfwGetTime()) * 5;
+		light_pos.z += cos(glfwGetTime()) * 5;
 		light_view = glm::lookAt(light_pos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+		light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 25.0f);
+
 		light_matrix = light_projection * light_view;
 
 		//  render scene from light's point of view

@@ -57,6 +57,9 @@
     <ClCompile Include="VertexBufferObject.cpp">
       <Filter>头文件</Filter>
     </ClCompile>
+    <ClCompile Include="Examples\PointShadow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -119,5 +122,10 @@
     <None Include="Shaders\shadow_mapping_base.fs" />
     <None Include="Shaders\light.vs" />
     <None Include="Shaders\light.fs" />
+    <None Include="Shaders\point_shaders.fs" />
+    <None Include="Shaders\point_shaders.vs" />
+    <None Include="Shaders\point_shaders_depth.fs" />
+    <None Include="Shaders\point_shaders_depth.gs" />
+    <None Include="Shaders\point_shaders_depth.vs" />
   </ItemGroup>
 </Project>
