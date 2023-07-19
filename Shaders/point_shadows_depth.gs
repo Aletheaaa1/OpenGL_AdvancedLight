@@ -13,7 +13,7 @@ void main()
 		gl_Layer = face;
 		for(int j=0; j<3;j++)
 		{
-			FragPos = gl_in[j].gl_Position;
+			FragPos =  gl_in[j].gl_Position;
 			gl_Position = ShadowMat[face] * FragPos;
 			EmitVertex();
 		}

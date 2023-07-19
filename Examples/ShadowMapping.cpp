@@ -270,6 +270,7 @@ int main(void)
 		//  render scene from light's point of view
 		simple_depth_shader.Bind();
 		simple_depth_shader.SetUniformMat4("LightSpaceMatrix", light_matrix);
+		simple_depth_shader.SetUniform3f("LightPos", glm::value_ptr(light_pos));
 
 		glViewport(0, 0, 1024, 1024);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);

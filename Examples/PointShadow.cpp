@@ -234,9 +234,11 @@ int main(void)
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
 
 		glm::vec3 light_pos{0.0f, 0.0f, 0.0f};
-		//light_pos.z += sin(glfwGetTime());
+		light_pos.z += sin(glfwGetTime());
 		glm::mat4 light_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 25.0f);
 		std::vector<glm::mat4> light_views = {
 			light_projection * glm::lookAt(light_pos, light_pos + glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
@@ -277,7 +279,7 @@ int main(void)
 		light_shader.SetUniformMat4("model", light_model);
 		light_shader.SetUniformMat4("projection", projection);
 		light_shader.SetUniformMat4("view", view);
-		light.Draw(light_shader);
+		//light.Draw(light_shader);
 #pragma endregion	Light
 
 		// 2. cube
@@ -293,6 +295,7 @@ int main(void)
 		shader.SetUniformMat4("projection", projection);
 		shader.SetUniformMat4("view", view);
 		shader.SetUniform3f("CameraPos", glm::value_ptr(camera.position));
+		shader.SetUniform3f("LightPos", glm::value_ptr(light_pos));
 		Render(shader);
 
 		camera.UpdateCameraPosition();
@@ -312,11 +315,16 @@ int main(void)
 void Render(Shader& shader)
 {
 	// room
+	glDisable(GL_CULL_FACE);
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(10.0f));
+	model = glm::scale(model, glm::vec3(5.0f));
 	shader.SetUniformMat4("model", model);
+	shader.SetUniform1i("InverseNormal", 1);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+	shader.SetUniform1i("InverseNormal", 0);
 
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	// cubes
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(4.0f, -3.5f, 0.0));
@@ -348,4 +356,11 @@ void Render(Shader& shader)
 	model = glm::scale(model, glm::vec3(0.75f));
 	shader.SetUniformMat4("model", model);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-1.5f, 1.0f, -0.5));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.75f));
+	shader.SetUniformMat4("model", model);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
 }

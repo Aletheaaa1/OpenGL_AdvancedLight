@@ -6,6 +6,7 @@ layout (location = 2) in vec2 aTextCoords;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform int InverseNormal;
 
 out vec3 Normal;
 out vec3 FragPos;
@@ -14,7 +15,14 @@ out vec2 TextCoords;
 void main()
 {
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
-	Normal = normalize(transpose(inverse(mat3(model))) * (-1 * aNormal));
+	if (InverseNormal == 0)
+	{
+		Normal = normalize(transpose(inverse(mat3(model))) * (1 * aNormal));
+	}
+	else if (InverseNormal == 1)
+	{
+		Normal = normalize(transpose(inverse(mat3(model))) * (-1 * aNormal));
+	}
 	FragPos = vec3(model * vec4(aPos, 1.0));
 	TextCoords = aTextCoords;
 }
