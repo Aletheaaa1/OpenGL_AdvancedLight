@@ -61,6 +61,14 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 		vertex.normal.y = mesh->mNormals[i].y;
 		vertex.normal.z = mesh->mNormals[i].z;
 
+		vertex.Tangent.x = mesh->mTangents[i].x;
+		vertex.Tangent.y = mesh->mTangents[i].y;
+		vertex.Tangent.z = mesh->mTangents[i].z;
+
+		vertex.Bitangent.x = mesh->mBitangents[i].x;
+		vertex.Bitangent.y = mesh->mBitangents[i].y;
+		vertex.Bitangent.z = mesh->mBitangents[i].z;
+
 		if (mesh->mTextureCoords[0])
 		{
 			vertex.textCoords.x = mesh->mTextureCoords[0][i].x;
@@ -94,11 +102,11 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	textures.insert(textures.end(), reflection_maps.begin(), reflection_maps.end());
 
 	// 法线贴图
-	std::vector<MeshTexture> normal_maps = LoadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
+	std::vector<MeshTexture> normal_maps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 	textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
 
 	// 高度贴图
-	std::vector<MeshTexture> height_maps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height");
+	std::vector<MeshTexture> height_maps = LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), height_maps.begin(), height_maps.end());
 
 	return Mesh({ vertices, indices, textures });

@@ -13,6 +13,8 @@ struct MeshVertex
 	glm::vec3 position;
 	glm::vec3 normal;
 	glm::vec2 textCoords;
+	glm::vec3 Tangent;
+	glm::vec3 Bitangent;
 };
 
 struct MeshTexture

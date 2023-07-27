@@ -72,6 +72,10 @@ void Mesh::SetupMesh()
 	glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(MeshVertex), (void*)offsetof(MeshVertex, normal));
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, false, sizeof(MeshVertex), (void*)offsetof(MeshVertex, textCoords));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, false, sizeof(MeshVertex), (void*)offsetof(MeshVertex, Tangent));
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, false, sizeof(MeshVertex), (void*)offsetof(MeshVertex, Bitangent));
 
 	glBindVertexArray(0);
 }
