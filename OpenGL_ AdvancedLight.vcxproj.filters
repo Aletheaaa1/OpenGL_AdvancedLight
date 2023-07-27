@@ -60,6 +60,9 @@
     <ClCompile Include="Examples\PointShadow.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Examples\NormalTexture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
