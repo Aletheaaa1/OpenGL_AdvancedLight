@@ -202,15 +202,17 @@ int main(void)
 	vao.Bind();
 
 	Model m{ "./Models/Crisis/nanosuit.obj" };
+	Model light{ "./Models/Planet/planet.obj" };
 	// Shader
 	Shader shader("./Shaders/normal_mapping.vs", "./Shaders/normal_mapping.fs");
+	Shader light_shader("./Shaders/light.vs", "./Shaders/light.fs");
 
 	// Texture
 	Texture diffuse_texture("./Textures/brickwall.jpg", true);
 	Texture normal_texture("./Textures/brickwall_normal.jpg", false);
 
 	// Light
-	glm::vec3 light_pos{0.5f, 1.0f, 0.3f};
+	glm::vec3 light_pos{0.0f, 0.0f, 2.0f};
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
@@ -226,12 +228,16 @@ int main(void)
 		glm::mat4 view = camera.GetViewMatrix();
 
 		shader.Bind();
+		vao.Bind();
+		vbo.Bind();
 		diffuse_texture.Usetexture(0);
 		diffuse_texture.Bind();
 		normal_texture.Usetexture(1);
 		normal_texture.Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.2f));
+		light_pos.x = sin(glfwGetTime());
 		//float angles = sin(glfwGetTime()) * 10;
 		//model = glm::rotate(model, (GLfloat)glfwGetTime() * -1, glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 		shader.SetUniformMat4("model", model);
@@ -241,9 +247,18 @@ int main(void)
 		shader.SetUniform1i("texture_normal", 1);
 		shader.SetUniform3f("LightPos", glm::value_ptr(light_pos));
 		shader.SetUniform3v("CameraPos", camera.position);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		m.Draw(shader);
+
+		light_shader.Bind();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, light_pos);
+		model = glm::scale(model, glm::vec3(0.05f));
+		light_shader.SetUniformMat4("model", model);
+		light_shader.SetUniformMat4("view", view);
+		light_shader.SetUniformMat4("projection", projection);
+		light.Draw(light_shader);
 
 		camera.UpdateCameraPosition();
 		/* Swap front and back buffers */
