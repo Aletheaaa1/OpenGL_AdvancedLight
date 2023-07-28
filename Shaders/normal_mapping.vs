@@ -11,28 +11,28 @@ uniform mat4 model;
 uniform vec3 LightPos;
 uniform vec3 CameraPos;
 
-out vec3 normal;
-out vec3 TangentLightPos;
-out vec3 TangentCameraPos;
-out vec3 TangentFragPos;
-out vec2 TangentTextCoords;
-out mat3 TBN;
+out VS_OUT{
+	vec3 TangentLightPos;
+	vec3 TangentCameraPos;
+	vec3 TangentFragPos;
+	vec2 TextCoords;
+	mat3 TBN;
+} vs_out;
 
 void main()
 {
-	vec3 FragPos = vec3(model * vec4(aPos, 1.0));
+	mat3 NormalMat = transpose(inverse(mat3(model)));
 
-	vec3 T = normalize(transpose(inverse(mat3(model))) * aTangent);
-	vec3 B = normalize(transpose(inverse(mat3(model))) * aBitangent);
-	vec3 N = normalize(transpose(inverse(mat3(model))) * aNormal);
-	TBN = transpose(mat3(T, B, N));
+	vec3 T = normalize(NormalMat * aTangent);
+	vec3 B = normalize(NormalMat * aBitangent);
+	vec3 N = normalize(NormalMat * aNormal);
+	vs_out.TBN = transpose(mat3(T, B, N));
 
-	TangentLightPos = TBN * LightPos;
-	TangentCameraPos = TBN * CameraPos;
-	TangentFragPos = TBN * FragPos;
-	TangentTextCoords = aTexture;
+	vs_out.TangentLightPos = vs_out.TBN * LightPos;
+	vs_out.TangentCameraPos = vs_out.TBN * CameraPos;
+	vs_out.TangentFragPos = vs_out.TBN *vec3(model * vec4(aPos, 1.0));
 
-	normal =  normalize(transpose(inverse(mat3(model))) * aNormal);
+	vs_out.TextCoords = aTexture;
 
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
 }
