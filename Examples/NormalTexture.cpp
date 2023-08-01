@@ -261,6 +261,15 @@ int main(void)
 		light_shader.SetUniformMat4("projection", projection);
 		light.Draw(light_shader);
 
+		light_shader.Bind();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, light_pos);
+		model = glm::scale(model, glm::vec3(0.05f));
+		light_shader.SetUniformMat4("model", model);
+		light_shader.SetUniformMat4("view", view);
+		light_shader.SetUniformMat4("projection", projection);
+		light.Draw(light_shader);
+
 		camera.UpdateCameraPosition();
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
