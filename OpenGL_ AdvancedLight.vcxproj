@@ -130,8 +130,9 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Examples\NormalTexture.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Examples\ParallelTexture.cpp" />
     <ClCompile Include="Examples\PointShadow.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -165,13 +166,22 @@
     <ClInclude Include="VertexBufferObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\height_mapping.fs" />
+    <None Include="Shaders\height_mapping.vs" />
     <None Include="Shaders\light.fs" />
     <None Include="Shaders\light.vs" />
+    <None Include="Shaders\normal_mapping.fs" />
+    <None Include="Shaders\normal_mapping.vs" />
     <None Include="Shaders\point_shaders.fs" />
     <None Include="Shaders\point_shaders.vs" />
     <None Include="Shaders\point_shaders_depth.fs" />
     <None Include="Shaders\point_shaders_depth.gs" />
     <None Include="Shaders\point_shaders_depth.vs" />
+    <None Include="Shaders\point_shadows.fs" />
+    <None Include="Shaders\point_shadows.vs" />
+    <None Include="Shaders\point_shadows_depth.fs" />
+    <None Include="Shaders\point_shadows_depth.gs" />
+    <None Include="Shaders\point_shadows_depth.vs" />
     <None Include="Shaders\quad.fs" />
     <None Include="Shaders\quad.vs" />
     <None Include="Shaders\shadow_mapping_base.fs" />

@@ -201,18 +201,18 @@ int main(void)
 	vao.AddBuffer(4, 3, GL_FLOAT, false, 14 * sizeof(float), 11 * sizeof(float));
 	vao.Bind();
 
-	Model m{ "./Models/Crisis/nanosuit.obj" };
-	Model light{ "./Models/cube/cube.obj" };
+	//Model light{ "./Models/cube/cube.obj" };
 	// Shader
-	Shader shader("./Shaders/normal_mapping.vs", "./Shaders/normal_mapping.fs");
+	Shader shader("./Shaders/height_mapping.vs", "./Shaders/height_mapping.fs");
 	Shader light_shader("./Shaders/light.vs", "./Shaders/light.fs");
 
 	// Texture
-	Texture diffuse_texture("./Textures/brickwall.jpg", true);
-	Texture normal_texture("./Textures/brickwall_normal.jpg", false);
+	Texture diffuse_texture("./Textures/bricks2.jpg", true);
+	Texture normal_texture("./Textures/bricks2_normal.jpg", false);
+	Texture height_texture("./Textures/bricks2_disp.jpg", false);
 
 	// Light
-	glm::vec3 light_pos{0.0f, 0.0f, 2.0f};
+	glm::vec3 light_pos{0.25f, 0.5f, 0.1f};
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
@@ -221,7 +221,7 @@ int main(void)
 		auto start = glfwGetTime();
 		ProcessInput(window);
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)600, 0.1f, 100.0f);
@@ -234,10 +234,12 @@ int main(void)
 		diffuse_texture.Bind();
 		normal_texture.Usetexture(1);
 		normal_texture.Bind();
+		height_texture.Usetexture(2);
+		height_texture.Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(0.5f));
-		light_pos.x = sin(glfwGetTime());
+		//light_pos.x = sin(glfwGetTime());
 		//float angles = sin(glfwGetTime()) * 10;
 		//model = glm::rotate(model, (GLfloat)glfwGetTime() * -1, glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 		shader.SetUniformMat4("model", model);
@@ -245,21 +247,11 @@ int main(void)
 		shader.SetUniformMat4("projection", projection);
 		shader.SetUniform1i("diffuse", 0);
 		shader.SetUniform1i("normal", 1);
+		shader.SetUniform1i("height", 2);
+		shader.SetUniform1f("height_scale", 0.1f);
 		shader.SetUniform3f("LightPos", glm::value_ptr(light_pos));
 		shader.SetUniform3v("CameraPos", camera.position);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		m.Draw(shader);
-		light.Draw(shader);
-
-		light_shader.Bind();
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, light_pos);
-		model = glm::scale(model, glm::vec3(0.05f));
-		light_shader.SetUniformMat4("model", model);
-		light_shader.SetUniformMat4("view", view);
-		light_shader.SetUniformMat4("projection", projection);
-		light.Draw(light_shader);
 
 		camera.UpdateCameraPosition();
 		/* Swap front and back buffers */

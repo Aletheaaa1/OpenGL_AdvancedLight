@@ -63,6 +63,9 @@
     <ClCompile Include="Examples\NormalTexture.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Examples\ParallelTexture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -130,5 +133,14 @@
     <None Include="Shaders\point_shaders_depth.fs" />
     <None Include="Shaders\point_shaders_depth.gs" />
     <None Include="Shaders\point_shaders_depth.vs" />
+    <None Include="Shaders\height_mapping.vs" />
+    <None Include="Shaders\height_mapping.fs" />
+    <None Include="Shaders\normal_mapping.fs" />
+    <None Include="Shaders\normal_mapping.vs" />
+    <None Include="Shaders\point_shadows.vs" />
+    <None Include="Shaders\point_shadows.fs" />
+    <None Include="Shaders\point_shadows_depth.fs" />
+    <None Include="Shaders\point_shadows_depth.vs" />
+    <None Include="Shaders\point_shadows_depth.gs" />
   </ItemGroup>
 </Project>
