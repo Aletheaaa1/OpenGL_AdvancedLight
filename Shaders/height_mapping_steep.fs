@@ -24,7 +24,7 @@ vec2 HeightMapping(vec2 TextCoords, vec3 CameraDir)
 	vec2 OffsetTextCoords = P / NumLayer;
 	
 	vec2 CurrentTextCoords = TextCoords;
-	float CurrentDepthMapValue = texture(height, CurrentTextCoords).r;
+	float CurrentDepthMapValue = texture(height, CurrentTextCoords).r; 
 
 	while(CurrentDepth < CurrentDepthMapValue)
 	{
