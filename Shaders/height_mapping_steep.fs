@@ -17,9 +17,23 @@ out vec4 FragColor;
 
 vec2 HeightMapping(vec2 TextCoords, vec3 CameraDir)
 {
-	float h = texture(height, TextCoords).r;
-	vec2 offset = CameraDir.xy / CameraDir.z * (h * height_scale);
-	return TextCoords - offset;
+	const float NumLayer = 20.0;
+	float LayerDepth = 1.0 / NumLayer;
+	float CurrentDepth = 0.0;
+	vec2 P = CameraDir.xy * height_scale;
+	vec2 OffsetTextCoords = P / NumLayer;
+	
+	vec2 CurrentTextCoords = TextCoords;
+	float CurrentDepthMapValue = texture(height, CurrentTextCoords).r;
+
+	while(CurrentDepth < CurrentDepthMapValue)
+	{
+		CurrentTextCoords -= OffsetTextCoords;
+		CurrentDepthMapValue = texture(height, CurrentTextCoords).r;
+		CurrentDepth += LayerDepth;
+	}
+
+	return CurrentTextCoords;
 }
 
 void main()
