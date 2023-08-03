@@ -173,6 +173,7 @@
   <ItemGroup>
     <None Include="Shaders\height_mapping.fs" />
     <None Include="Shaders\height_mapping.vs" />
+    <None Include="Shaders\height_mapping_occulus.fs" />
     <None Include="Shaders\light.fs" />
     <None Include="Shaders\light.vs" />
     <None Include="Shaders\normal_mapping.fs" />

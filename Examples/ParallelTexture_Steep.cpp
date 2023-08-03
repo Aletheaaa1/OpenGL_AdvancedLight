@@ -203,7 +203,7 @@ int main(void)
 
 	//Model light{ "./Models/cube/cube.obj" };
 	// Shader
-	Shader shader("./Shaders/height_mapping.vs", "./Shaders/height_mapping_steep.fs");
+	Shader shader("./Shaders/height_mapping.vs", "./Shaders/height_mapping_occulus.fs");
 	Shader light_shader("./Shaders/light.vs", "./Shaders/light.fs");
 
 	// Texture

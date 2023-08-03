@@ -145,5 +145,6 @@
     <None Include="Shaders\point_shadows_depth.fs" />
     <None Include="Shaders\point_shadows_depth.vs" />
     <None Include="Shaders\point_shadows_depth.gs" />
+    <None Include="Shaders\height_mapping_occulus.fs" />
   </ItemGroup>
 </Project>
