@@ -8,16 +8,16 @@ in VS_OUT{
 	mat3 TBN;
 } fs_in;
 
-uniform sampler2D diffuse;
-uniform sampler2D normal;
+uniform sampler2D texture_diffuse;
+uniform sampler2D texture_normal;
 
 out vec4 FragColor;
 
 void main()
 {
-	vec3 Color = texture(diffuse, fs_in.TextCoords).rgb;
+	vec3 Color = texture(texture_diffuse, fs_in.TextCoords).rgb;
 
-	vec3 Normal = texture(normal, fs_in.TextCoords).rgb;
+	vec3 Normal = texture(texture_normal, fs_in.TextCoords).rgb;
 	Normal = Normal * 2.0 - 1.0;
 
 	vec3 LightDir = normalize(fs_in.TangentLightPos - fs_in.TangentFragPos);
