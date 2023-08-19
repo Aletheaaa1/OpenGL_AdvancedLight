@@ -20,8 +20,8 @@ glm::mat4 Camera::GetViewMatrix()
 
 void Camera::UpdateCameraView(float x_offset, float y_offset)
 {
-	pitch += y_offset * 0.1;
-	yaw += x_offset * -0.1;
+	pitch += y_offset * 0.03;
+	yaw += x_offset * -0.03;
 
 	if (pitch > 89.0f)
 		pitch = 89.0f;
