@@ -249,6 +249,14 @@ int main(void)
 		}
 	}
 
+	unsigned int msaa_fbo;
+	unsigned int msaa_texture;
+	glGenFramebuffers(1, &msaa_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, msaa_fbo);
+	glGenTextures(1, &msaa_texture);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msaa_texture);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA16F, 800, 600, true);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, msaa_texture, 0);
 #pragma endregion Framebuffer
 
 #pragma region Lights
