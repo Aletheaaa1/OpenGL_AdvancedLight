@@ -42,6 +42,8 @@ Texture::Texture(const char* image, bool gamma) : image_file(image)
 	if (data)
 	{
 		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, GL_UNSIGNED_BYTE, data));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 	}
 	else
