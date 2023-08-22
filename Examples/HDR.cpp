@@ -142,10 +142,12 @@ int main(void)
 
 	float quadVertices[] = {
 		// positions        // texture Coords
-		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
 		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
 		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
 		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
 	};
 
 	float vertices[] = {
@@ -312,7 +314,7 @@ int main(void)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, hdr_texture);
 		hdr_shader.SetUniform1i("hdrBuffer", 0);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		camera.UpdateCameraPosition();
 		/* Swap front and back buffers */
