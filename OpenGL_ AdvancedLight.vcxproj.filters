@@ -72,6 +72,9 @@
     <ClCompile Include="Examples\HDR.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Examples\Bloom.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
