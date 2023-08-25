@@ -3,7 +3,7 @@
 #include "stb_image.h"
 #include "Model.h"
 
-Model::Model(const std::string& file_path)
+Model::Model(const std::string& file_path, bool gamma) : gamma(gamma)
 {
 	LoadModel(file_path);
 }
@@ -19,7 +19,7 @@ void Model::Draw(Shader& shader)
 void Model::LoadModel(const std::string& path)
 {
 	Assimp::Importer import;
-	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::cout << "Assimp error" << std::endl;
@@ -97,10 +97,6 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<MeshTexture> specular_maps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specular_maps.begin(), specular_maps.end());
 
-	// ∑¥…‰
-	std::vector<MeshTexture> reflection_maps = LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_reflection");
-	textures.insert(textures.end(), reflection_maps.begin(), reflection_maps.end());
-
 	// ∑®œﬂÃ˘Õº
 	std::vector<MeshTexture> normal_maps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 	textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
@@ -134,7 +130,7 @@ std::vector<MeshTexture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureT
 		if (!skip)
 		{   // if texture hasn't been loaded already, load it
 			MeshTexture texture;
-			texture.id = TextureFromFile(str.C_Str(), this->directory);
+			texture.id = TextureFromFile(str.C_Str(), this->directory, this->gamma);
 			texture.type = typeName;
 			texture.path = str.C_Str();
 			textures.push_back(texture);
@@ -144,7 +140,7 @@ std::vector<MeshTexture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureT
 	return textures;
 }
 
-unsigned int TextureFromFile(const char* path, const std::string& directory)
+unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma)
 {
 	std::string filename = std::string(path);
 	filename = directory + '/' + filename;
@@ -156,13 +152,36 @@ unsigned int TextureFromFile(const char* path, const std::string& directory)
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
 	if (data)
 	{
-		GLenum format;
+		unsigned int internal_format, format;
 		if (nrComponents == 1)
+		{
+			internal_format = GL_RED;
 			format = GL_RED;
+		}
 		else if (nrComponents == 3)
+		{
+			if (gamma == true)
+			{
+				internal_format = GL_SRGB;
+			}
+			else
+			{
+				internal_format = GL_RGB;
+			}
 			format = GL_RGB;
+		}
 		else if (nrComponents == 4)
+		{
+			if (gamma == true)
+			{
+				internal_format = GL_SRGB_ALPHA;
+			}
+			else
+			{
+				internal_format = GL_RGBA;
+			}
 			format = GL_RGBA;
+		}
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
