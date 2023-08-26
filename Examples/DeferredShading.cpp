@@ -321,11 +321,10 @@ int main(void)
 		}
 		RenderQuad();
 
-		//glBindFramebuffer(GL_READ_FRAMEBUFFER, g_fbo);
-		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		//glBlitFramebuffer(0, 0, 800, 600, 0, 0, 800, 600, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBlitFramebuffer(0, 0, SCREEN_WIDHT, SCREEN_HEIGHT, 0, 0, SCREEN_WIDHT, SCREEN_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
 		lightBox_shader.Bind();
 		lightBox_shader.SetUniformMat4("projection", projection);
 		lightBox_shader.SetUniformMat4("view", view);
