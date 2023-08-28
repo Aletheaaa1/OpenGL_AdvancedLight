@@ -17,6 +17,7 @@ private:
 
 public:
 	Shader(const std::string& vs_file, const std::string& fs_file, const std::string& gs_file = "");
+	Shader& operator=(const Shader&);
 
 	void Bind();
 

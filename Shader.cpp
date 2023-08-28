@@ -13,6 +13,13 @@ Shader::Shader(const std::string& vs_file, const std::string& fs_file, const std
 	program = CreateProgram(vertex_shader, fragment_shader, geometry_shader);
 }
 
+Shader& Shader::operator=(const Shader& shader)
+{
+	// TODO: 在此处插入 return 语句
+	this->program = shader.program;
+	return *this;
+}
+
 void Shader::Bind()
 {
 	//std::cout << program << std::endl;
