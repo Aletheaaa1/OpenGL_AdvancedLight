@@ -27,7 +27,7 @@ void main()
 	vec3 cameraDir = normalize(CameraPos - FragPos); 
 	vec3 ambient = 0.1 * Diffuse;
 	vec3 lighting = ambient;
-	for(int i=0; i<1; i++)
+	for(int i=0; i<32; i++)
 	{
 		vec3 lightDir = normalize(lights[i].lightPos - FragPos);
 		vec3 diffuse = max(dot(lightDir, Normal), 0.0) * Diffuse * lights[i].lightColor;
