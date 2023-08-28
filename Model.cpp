@@ -3,7 +3,7 @@
 #include "stb_image.h"
 #include "Model.h"
 
-Model::Model(const std::string& file_path, bool gamma) : gamma(gamma)
+Model::Model(const std::string& file_path, bool gamma, bool flip) : gamma(gamma), flip(flip)
 {
 	LoadModel(file_path);
 }
@@ -140,7 +140,7 @@ std::vector<MeshTexture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureT
 	return textures;
 }
 
-unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma)
+unsigned int Model::TextureFromFile(const char* path, const std::string& directory, bool gamma)
 {
 	std::string filename = std::string(path);
 	filename = directory + '/' + filename;
@@ -149,7 +149,10 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 	glGenTextures(1, &textureID);
 
 	int width, height, nrComponents;
-	stbi_set_flip_vertically_on_load(true);
+	if (this->flip == true)
+	{
+		stbi_set_flip_vertically_on_load(true);
+	}
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
 	if (data)
 	{
