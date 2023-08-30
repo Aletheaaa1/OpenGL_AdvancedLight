@@ -203,16 +203,20 @@ int main(void)
 	std::string dir_path = "./Shaders/SSAO/";
 	Shader g_shader{ dir_path + "g_buffer.vs", dir_path + "g_buffer.fs" };
 	Shader ssao_shader{ dir_path + "ssao.vs", dir_path + "ssao.fs" };
+	Shader blur_shader{ dir_path + "ssao.vs" , dir_path + "ssao_blur.fs" };
+	Shader lighting_shader{ dir_path + "ssao.vs", dir_path + "ssao_lighting.fs" };
 	Shader debug_shader{ dir_path + "debug.vs", dir_path + "debug.fs" };
 #pragma endregion Shaders
 
 #pragma region Texture
-	Texture wall_diffuse_texture{ "./Textures/brickwall.jpg", true };
-	Texture wall_normal_texture{ "./Textures/brickwall_normal.jpg", false };
+	Texture wall_diffuse_texture{ "./Textures/bricks2.jpg", true };
+	Texture wall_normal_texture{ "./Textures/bricks2_normal.jpg", false };
 #pragma endregion Texture
 
+#pragma region Models
 	Model backpack{ "./Models/Crisis/nanosuit.obj" ,false, false };
 	//Model backpack{ "./Models/Mars/Mars.obj" ,false };
+#pragma endregion Models
 
 #pragma region Framebuffer
 	//	geometry framebuffer
@@ -266,7 +270,9 @@ int main(void)
 	unsigned int ssao_texture;
 	glGenTextures(1, &ssao_texture);
 	glBindTexture(GL_TEXTURE_2D, ssao_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDHT, SCREEN_HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDHT, SCREEN_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssao_texture, 0);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -284,7 +290,9 @@ int main(void)
 	glBindTexture(GL_TEXTURE_2D, blur_texture);
 	//	对ssao贴图做模糊处理，因此只需要r通道
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDHT, SCREEN_HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blur_fbo, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blur_texture, 0);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
 		std::cout << "blur_fbo not complete! \n";
@@ -293,18 +301,18 @@ int main(void)
 #pragma endregion Framebuffer
 
 #pragma region random kernel
-	std::uniform_real_distribution<float> random_Float(0.0, 1.0);
+	std::uniform_real_distribution<float> random_float(0.0, 1.0);
 	std::default_random_engine generator;
 
 	const int KERNEL_NUMBER = 64;
 	std::vector<glm::vec3> ssao_kernels;
 	for (size_t i = 0; i < KERNEL_NUMBER; i++)
 	{
-		float x = random_Float(generator) * 2.0 - 1.0;
-		float y = random_Float(generator) * 2.0 - 1.0;
-		float z = random_Float(generator);
+		float x = random_float(generator) * 2.0 - 1.0;
+		float y = random_float(generator) * 2.0 - 1.0;
+		float z = random_float(generator);
 		glm::vec3 kernel{ x, y, z };
-		kernel *= random_Float(generator);
+		kernel *= random_float(generator);
 		kernel = glm::normalize(kernel);
 
 		float scale = float(i) / 64.0;
@@ -314,13 +322,30 @@ int main(void)
 		ssao_kernels.push_back(kernel);
 	}
 
-	//	noise texture
+	//noise texture
+	std::vector<glm::vec3> noise_colors;
+	for (size_t i = 0; i < 16; i++)
+	{
+		float r = random_float(generator) * 2.0 - 1.0;
+		float g = random_float(generator) * 2.0 - 1.0;
+		float b = 0.0f;
+		noise_colors.push_back(glm::vec3(r, g, b));
+	}
+
+	unsigned int noise_texture;
+	glGenTextures(1, &noise_texture);
+	glBindTexture(GL_TEXTURE_2D, noise_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, noise_colors.data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 #pragma endregion random kernel
 
 #pragma region Lignting
-	glm::vec3 lightPos = glm::vec3(2.0, 4.0, -2.0);
-	glm::vec3 lightColor = glm::vec3(0.2, 0.2, 0.7);
+	glm::vec3 lightPos = glm::vec3(2.0, 4.0, 2.0);
+	glm::vec3 lightColor = glm::vec3(0.2, 0.2, 3.0);
 #pragma endregion Lighting
 
 	/* Loop until the user closes the window */
@@ -351,7 +376,7 @@ int main(void)
 		glBindFramebuffer(GL_FRAMEBUFFER, g_fbo);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		model = glm::translate(model, glm::vec3(0.0, 7.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(20.0f, 20.0f, 20.0f));
+		model = glm::scale(model, glm::vec3(7.5f, 7.5f, 7.5f));
 
 		wall_diffuse_texture.Usetexture(0);
 		wall_diffuse_texture.Bind();
@@ -368,14 +393,13 @@ int main(void)
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.5f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0, 0.0, 0.0));
 		model = glm::scale(model, glm::vec3(0.8f));
 		g_shader.SetUniformMat4("model", model);
 		backpack.Draw(g_shader);
 #pragma endregion geometry fbo
 
 #pragma region ssao fbo
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, ssao_fbo);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, position_depth_texture);
@@ -383,11 +407,14 @@ int main(void)
 		glBindTexture(GL_TEXTURE_2D, normal_texture);
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, color_texture);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, noise_texture);
 
 		ssao_shader.Bind();
 		ssao_shader.SetUniform1i("gPosition", 0);
 		ssao_shader.SetUniform1i("gNormal", 1);
 		ssao_shader.SetUniform1i("gColor", 2);
+		ssao_shader.SetUniform1i("gNoise", 3);
 		ssao_shader.SetUniformMat4("projection", projection);
 		for (size_t i = 0; i < KERNEL_NUMBER; i++)
 		{
@@ -397,17 +424,42 @@ int main(void)
 		RenderQuad();
 #pragma endregion ssao fbo
 
-		/*
-		#pragma region debug
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				debug_shader.Bind();
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, normal_texture);
-				debug_shader.SetUniform1i("texture_test", 0);
-				RenderQuad();
-		#pragma endregion debug
-		*/
+#pragma region blur fbo
+		glBindFramebuffer(GL_FRAMEBUFFER, blur_fbo);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, ssao_texture);
+
+		blur_shader.Bind();
+		blur_shader.SetUniform1i("texture_ssao", 0);
+		RenderQuad();
+#pragma endregion blur fbo
+
+#pragma region screen
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, position_depth_texture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, normal_texture);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, color_texture);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, blur_texture);
+
+		lighting_shader.Bind();
+		lighting_shader.SetUniform1i("gPosition", 0);
+		lighting_shader.SetUniform1i("gNormal", 1);
+		lighting_shader.SetUniform1i("gColor", 2);
+		lighting_shader.SetUniform1i("ssao", 3);
+		lighting_shader.SetUniform3v("cameraPos", camera.position);
+		lighting_shader.SetUniform3v("lightPos", lightPos);
+		lighting_shader.SetUniform3v("lightColor", lightColor);
+		lighting_shader.SetUniformMat4("projection", projection);
+
+		RenderQuad();
+
+#pragma endregion screen
 
 		camera.UpdateCameraPosition();
 		/* Swap front and back buffers */
