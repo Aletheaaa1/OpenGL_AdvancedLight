@@ -61,13 +61,16 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 		vertex.normal.y = mesh->mNormals[i].y;
 		vertex.normal.z = mesh->mNormals[i].z;
 
-		vertex.Tangent.x = mesh->mTangents[i].x;
-		vertex.Tangent.y = mesh->mTangents[i].y;
-		vertex.Tangent.z = mesh->mTangents[i].z;
+		if (mesh->HasTangentsAndBitangents() == true)
+		{
+			vertex.Tangent.x = mesh->mTangents[i].x;
+			vertex.Tangent.y = mesh->mTangents[i].y;
+			vertex.Tangent.z = mesh->mTangents[i].z;
 
-		vertex.Bitangent.x = mesh->mBitangents[i].x;
-		vertex.Bitangent.y = mesh->mBitangents[i].y;
-		vertex.Bitangent.z = mesh->mBitangents[i].z;
+			vertex.Bitangent.x = mesh->mBitangents[i].x;
+			vertex.Bitangent.y = mesh->mBitangents[i].y;
+			vertex.Bitangent.z = mesh->mBitangents[i].z;
+		}
 
 		if (mesh->mTextureCoords[0])
 		{
