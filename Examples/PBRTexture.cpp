@@ -204,11 +204,11 @@ int main(void)
 #pragma endregion Models
 
 #pragma region Texture
-	Texture albedo{ "./Textures/pbr/rusted_iron/albedo.png", true };
-	Texture roughness{ "./Textures/pbr/rusted_iron/roughness.png", false };
-	Texture metallic{ "./Textures/pbr/rusted_iron/metallic.png", false };
-	Texture normal{ "./Textures/pbr/rusted_iron/normal.png", false };
-	Texture ao{ "./Textures/pbr/rusted_iron/ao.png", false };
+	Texture albedo{ "./Textures/pbr/rusted_iron/albedo.png", true, true };
+	Texture roughness{ "./Textures/pbr/rusted_iron/roughness.png" };
+	Texture metallic{ "./Textures/pbr/rusted_iron/metallic.png" };
+	Texture normal{ "./Textures/pbr/rusted_iron/normal.png" };
+	Texture ao{ "./Textures/pbr/rusted_iron/ao.png" };
 #pragma endregion
 
 #pragma region Light
