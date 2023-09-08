@@ -84,6 +84,18 @@
     <ClCompile Include="Examples\SSAO.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Examples\VolumetricLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Examples\PBRLighting.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Examples\PBRTexture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Examples\IBL.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
