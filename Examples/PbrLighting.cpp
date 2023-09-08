@@ -199,7 +199,7 @@ int main(void)
 	glEnable(GL_MULTISAMPLE);
 
 #pragma region Shaders
-	Shader shader{ "./Shaders/PbrLighting/pbr.vs", "./Shaders/PbrLighting/pbr.fs" };
+	Shader shader{ "./Shaders/PBRLighting/pbr.vs", "./Shaders/PBRLighting/pbr.fs" };
 #pragma endregion Shaders
 
 #pragma region Models
@@ -275,7 +275,7 @@ int main(void)
 				temp_model = glm::rotate(temp_model, glm::radians(-90.0f), glm::vec3(1.0f, 0, 0));
 				shader.SetUniform1f("material.roughness", roughness);
 				shader.SetUniform1f("material.metallic", metallic);
-				shader.SetUniform3v("material.albedo", glm::vec3(0.85f, 0.0f, 0.0f));
+				shader.SetUniform3v("material.albedo", glm::vec3(0.6f, 0.6f, 0.6f));
 				shader.SetUniformMat4("model", temp_model);
 				ball.Draw(shader);
 			}

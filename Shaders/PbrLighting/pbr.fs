@@ -70,7 +70,7 @@ void main()
 {
 	vec3 result = vec3(0.0);
 
-	for(int i=0; i<4; i++)
+	for(int i=0; i<1; i++)
 	{
 		vec3 lightDir = normalize(lights[i].lightPos - FragPos);
 		vec3 cameraDir = normalize(cameraPos - FragPos);
@@ -86,7 +86,7 @@ void main()
 		float brdfDenominator = 4.0 * max(dot(Normal, cameraDir), 0.0) * max(dot(Normal, lightDir), 0.0) + 0.00001;
 		vec3 specular = brdfNumerator / brdfDenominator;
 
-		vec3 kS = specular;
+		vec3 kS = F;
 		vec3 kD = 1 - kS;
 		kD = kD * (1 - material.metallic);
 
@@ -95,7 +95,7 @@ void main()
 		result += Lo;
 	}
 
-	vec3 ambient = 0.01 * material.albedo;
+	vec3 ambient = 0.02 * material.albedo;
 
 	result += ambient;
 	result = vec3(1.0) - exp(-result * 1.0);
