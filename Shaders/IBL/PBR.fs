@@ -19,6 +19,7 @@ struct Light
 };
 
 uniform Light lights[4];
+uniform samplerCube IBL;
 uniform Material material;
 uniform vec3 cameraPos;
 
@@ -69,10 +70,17 @@ vec3 Fernel(vec3 h, vec3 v, float metallic)
 	return f0 + (1 - f0) * pow(clamp((1 - HdotV), 0.0, 0.5), 5);
 }
 
+vec3 fresnelSchlickRoughness(float NdotV, vec3 F0, float roughness)
+{
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - NdotV, 5.0);
+}
+
 void main()
 {
 	vec3 result = vec3(0.0f);
 	vec3 normal = normalize(Normal);
+	vec3 viewDir = normalize(cameraPos - FragPos);
+	vec3 IBL_Light = texture(IBL, normal).xyz;
 
 	for(int i = 0; i < 4; i++)
 	{
@@ -97,11 +105,14 @@ void main()
 		result += Lo;
 	}
 
-	vec3 ambient = 0.05 * material.albedo;
+	vec3 kS = fresnelSchlickRoughness(max(dot(normal, viewDir), 0.0), vec3(0.56, 0.57, 0.58), material.roughness);
+	vec3 kD = vec3(1.0) - kS;
+
+	vec3 ambient = kD * material.albedo * IBL_Light;
 
 	result += ambient;
 	result = vec3(1.0f) - exp(-result * 1.0);
 	result = pow(result, vec3(1.0 / 2.2));
 
-	FragColor = vec4(result ,1.0);
+	FragColor  = vec4(result ,1.0);
 }

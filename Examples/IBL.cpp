@@ -162,6 +162,7 @@ void ReLoad(GLFWwindow* window, int focus)
 }
 #pragma endregion Interaction
 
+#pragma region Initial
 int main(void)
 {
 	GLFWwindow* window;
@@ -196,6 +197,7 @@ int main(void)
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
+#pragma endregion Initial
 
 #pragma region Texture
 	Texture hdr_texture{ "Textures/hdr/newport_loft.hdr" };
@@ -206,10 +208,10 @@ int main(void)
 	Shader hdr_shader{ "./Shaders/IBL/hdr_to_cubemap.vs", "./Shaders/IBL/hdr_to_cubemap.fs" };
 	Shader PBR_shader{ "./Shaders/IBL/PBR.vs", "./Shaders/IBL/PBR.fs" };
 	Shader light_shader{ "./Shaders/IBL/light.vs", "./Shaders/IBL/light.fs" };
+	Shader con_shader{ "./Shaders/IBL/convolution.vs", "./Shaders/IBL/convolution.fs" };
 #pragma endregion Shaders
 
 #pragma region Framebuffer
-
 	//	attach to framebuffer
 	glm::mat4 skybox_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, 100.0f);
 	std::vector<glm::mat4> skybox_views
@@ -244,7 +246,9 @@ int main(void)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#pragma endregion Framebufer
 
+#pragma region HDR -> Skybox
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, 512, 512);
@@ -265,7 +269,47 @@ int main(void)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, SCREEN_WIDHT, SCREEN_HEIGHT);
-#pragma endregion Framebufer
+#pragma endregion HDR -> Skybox
+
+#pragma region Convolution
+	unsigned int convolution_texture;
+	glGenTextures(1, &convolution_texture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, convolution_texture);
+	for (unsigned int i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindRenderbuffer(GL_FRAMEBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	glViewport(0, 0, 32, 32);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	glActiveTexture(GL_TEXTURE0);
+
+	con_shader.Bind();
+	con_shader.SetUniform1i("skybox_texture", 0);
+	con_shader.SetUniformMat4("projection", skybox_projection);
+	for (unsigned int i = 0; i < 6; i++)
+	{
+		con_shader.SetUniformMat4("view", skybox_views[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, convolution_texture, 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		RenderCube();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, SCREEN_WIDHT, SCREEN_HEIGHT);
+#pragma endregion Convolution
 
 #pragma region Models
 	Model light{ "./Models/planet/planet.obj" };
@@ -275,10 +319,10 @@ int main(void)
 #pragma region Light
 	glm::vec3 lightPositions[] =
 	{
-			glm::vec3(-10.0f,  10.0f, 10.0f),
-			glm::vec3(10.0f,  10.0f, 10.0f),
-			glm::vec3(-10.0f, -10.0f, 10.0f),
-			glm::vec3(10.0f, -10.0f, 10.0f),
+			glm::vec3(-150.0f,  150.0f, 150.0f),
+			glm::vec3(150.0f,  150.0f, 150.0f),
+			glm::vec3(-150.0f, -150.0f, 150.0f),
+			glm::vec3(150.0f, -150.0f, 150.0f),
 	};
 	glm::vec3 lightColors[] =
 	{
@@ -289,6 +333,7 @@ int main(void)
 	};
 #pragma endregion Light
 
+#pragma region Render loop
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
@@ -311,16 +356,21 @@ int main(void)
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(0.2f));
+#pragma endregion Render loop
 
 #pragma region PBR
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, convolution_texture);
+
 		PBR_shader.Bind();
 		PBR_shader.SetUniformMat4("projection", projection);
 		PBR_shader.SetUniformMat4("view", view);
 		PBR_shader.SetUniform3v("material.albedo", glm::vec3(0.85f));
 		PBR_shader.SetUniform3v("cameraPos", camera.position);
+		PBR_shader.SetUniform1i("IBL", 0);
 		for (unsigned int i = 0; i < 4; i++)
 		{
-			PBR_shader.SetUniform3v("lights[" + std::to_string(i) + "].lightPos", lightPositions[i]);
+			PBR_shader.SetUniform3v("lights[" + std::to_string(i) + "].lightPos", lightPositions[i] + glm::vec3(100 * sin(glfwGetTime())));
 			PBR_shader.SetUniform3v("lights[" + std::to_string(i) + "].lightColor", lightColors[i]);
 		}
 
@@ -342,7 +392,7 @@ int main(void)
 				PBR_shader.SetUniformMat4("model", temp_model);
 				PBR_shader.SetUniform1f("material.roughness", roughness);
 				PBR_shader.SetUniform1f("material.metallic", metallic);
-				//mesh.Draw(PBR_shader);
+				mesh.Draw(PBR_shader);
 			}
 			metallic = 0.0f;
 		}
@@ -355,23 +405,13 @@ int main(void)
 		light_shader.SetUniformMat4("view", view);
 		light_shader.SetUniformMat4("projection", projection);
 
-		const float PI = 3.1415926;
-		float sample_delta = 0.1f;
-		for (float phi = 0.0f; phi <= 2.0 * PI; phi += sample_delta)
+		for (unsigned int i = 0; i < 4; i++)
 		{
-			for (float theta = 0.0f; theta <= 0.5 * PI; theta += sample_delta)
-			{
-				glm::vec3 sample_pos = glm::vec3{
-					sin(theta) * cos(phi),
-					cos(theta),
-					sin(theta) * sin(phi)
-				};
-				glm::mat4 temp_model = glm::translate(model, sample_pos * 200.0f);
-				light_shader.SetUniformMat4("model", temp_model);
-				RenderCube();
-			}
+			using mat4 = glm::mat4;
+			mat4 temp_model = glm::translate(model, lightPositions[i] + glm::vec3(100 * sin(glfwGetTime())));
+			light_shader.SetUniformMat4("model", temp_model);
+			light.Draw(light_shader);
 		}
-
 #pragma endregion Lights
 
 #pragma region  hdr -> Skybox
