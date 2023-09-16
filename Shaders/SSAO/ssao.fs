@@ -20,6 +20,7 @@ void main()
 
 	vec3 randomVec = texture(gNoise, TexCoords * randomVecSize).xyz;
 	vec3 t = normalize(randomVec - normal * dot(randomVec, normal));
+//	vec3 t = normalize(cross(normal, randomVec));
 	vec3 b = cross(normal, t);
 	mat3 TBN = mat3(t, b, normal);	// normalÎª¹Û²ì¿Õ¼ä
 

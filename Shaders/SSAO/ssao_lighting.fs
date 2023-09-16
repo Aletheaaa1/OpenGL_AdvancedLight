@@ -30,7 +30,7 @@ void main()
 	vec3 halfDir = normalize(lightDir + cameraDir);
 
 	vec3 lighting = vec3(0.0);;
-	vec3 ambient = 0.2 * blur * color;
+	vec3 ambient = 0.3 * blur * color;
 
 	float diffuseRate = max(dot(lightDir, normal), 0.0);
 	vec3 diffuse = color * diffuseRate * lightColor;
@@ -45,5 +45,5 @@ void main()
 	float attenuation = 1.0 / (dist * dist * quadratic);
 	lighting *= attenuation;
 
-	FragColor = vec4(lighting, 1.0);
+	FragColor = vec4(vec3(blur), 1.0);
 }
