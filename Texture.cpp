@@ -123,7 +123,7 @@ Texture::Texture(std::vector<std::string> cubemaps, bool gamma, bool flip) : gam
 
 Texture::~Texture()
 {
-	GLCall(glDeleteTextures(1, &m_texture_buffer));
+	//GLCall(glDeleteTextures(1, &m_texture_buffer));
 }
 
 void Texture::Bind()
